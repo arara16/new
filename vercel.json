@@ -22,10 +22,5 @@
   ],
   "env": {
     "PYTHON_VERSION": "3.10"
-  },
-  "functions": {
-    "app.py": {
-      "runtime": "python3.10"
-    }
   }
 }
