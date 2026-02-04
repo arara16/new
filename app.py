@@ -17,7 +17,7 @@ from ta.volatility import BollingerBands
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__, static_folder='static', static_url_path='/static')
+app = Flask(__name__, static_folder='public', static_url_path='/static')
 
 # Global cache for data
 data_cache = {}
