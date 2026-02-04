@@ -56,6 +56,8 @@ def fetch_binance_data():
         response = requests.get('https://api.binance.com/api/v3/ticker/24hr', timeout=10)
         if response.status_code == 200:
             tickers = response.json()
+            # Sort by quote volume and take top 100
+            tickers = sorted(tickers, key=lambda x: float(x.get('quoteVolume', 0)), reverse=True)[:100]
             logger.info(f"Successfully fetched {len(tickers)} tickers from Binance")
             return tickers
     except Exception as e:
@@ -66,6 +68,8 @@ def fetch_binance_data():
         response = requests.get('https://api1.binance.com/api/v3/ticker/24hr', timeout=10)
         if response.status_code == 200:
             tickers = response.json()
+            # Sort by quote volume and take top 100
+            tickers = sorted(tickers, key=lambda x: float(x.get('quoteVolume', 0)), reverse=True)[:100]
             logger.info(f"Successfully fetched {len(tickers)} tickers from backup Binance API")
             return tickers
     except Exception as e:
@@ -73,23 +77,45 @@ def fetch_binance_data():
     
     # Return mock data as last resort
     logger.warning("Using mock data as fallback")
-    return get_mock_tickers()
+    return get_mock_tickers(100)
 
-def get_mock_tickers():
-    """Generate mock ticker data"""
-    mock_data = [
+def get_mock_tickers(limit=100):
+    """Generate mock ticker data for top cryptocurrencies"""
+    import random
+    
+    # Base mock data for major coins
+    base_coins = [
         {'symbol': 'BTCUSDT', 'lastPrice': '50000.00', 'openPrice': '49000.00', 'highPrice': '51000.00', 'lowPrice': '48000.00', 'volume': '1000.00', 'quoteVolume': '50000000.00', 'count': '50000', 'priceChangePercent': '2.04'},
         {'symbol': 'ETHUSDT', 'lastPrice': '3000.00', 'openPrice': '2900.00', 'highPrice': '3100.00', 'lowPrice': '2800.00', 'volume': '5000.00', 'quoteVolume': '15000000.00', 'count': '30000', 'priceChangePercent': '3.45'},
+        {'symbol': 'BNBUSDT', 'lastPrice': '400.00', 'openPrice': '390.00', 'highPrice': '410.00', 'lowPrice': '380.00', 'volume': '2000.00', 'quoteVolume': '800000.00', 'count': '20000', 'priceChangePercent': '2.56'},
         {'symbol': 'SOLUSDT', 'lastPrice': '150.00', 'openPrice': '145.00', 'highPrice': '155.00', 'lowPrice': '140.00', 'volume': '10000.00', 'quoteVolume': '1500000.00', 'count': '25000', 'priceChangePercent': '3.45'},
         {'symbol': 'XRPUSDT', 'lastPrice': '0.60', 'openPrice': '0.58', 'highPrice': '0.62', 'lowPrice': '0.56', 'volume': '50000.00', 'quoteVolume': '30000.00', 'count': '40000', 'priceChangePercent': '3.45'},
-        {'symbol': 'BNBUSDT', 'lastPrice': '400.00', 'openPrice': '390.00', 'highPrice': '410.00', 'lowPrice': '380.00', 'volume': '2000.00', 'quoteVolume': '800000.00', 'count': '20000', 'priceChangePercent': '2.56'},
-        {'symbol': 'DOGEUSDT', 'lastPrice': '0.15', 'openPrice': '0.14', 'highPrice': '0.16', 'lowPrice': '0.13', 'volume': '100000.00', 'quoteVolume': '15000.00', 'count': '60000', 'priceChangePercent': '7.14'},
-        {'symbol': 'LINKUSDT', 'lastPrice': '20.00', 'openPrice': '19.50', 'highPrice': '20.50', 'lowPrice': '19.00', 'volume': '3000.00', 'quoteVolume': '60000.00', 'count': '15000', 'priceChangePercent': '2.56'},
+        {'symbol': 'USDCUSDT', 'lastPrice': '1.00', 'openPrice': '1.00', 'highPrice': '1.00', 'lowPrice': '1.00', 'volume': '100000.00', 'quoteVolume': '100000.00', 'count': '10000', 'priceChangePercent': '0.00'},
         {'symbol': 'ADAUSDT', 'lastPrice': '0.50', 'openPrice': '0.48', 'highPrice': '0.52', 'lowPrice': '0.46', 'volume': '40000.00', 'quoteVolume': '20000.00', 'count': '35000', 'priceChangePercent': '4.17'},
-        {'symbol': 'LTCUSDT', 'lastPrice': '100.00', 'openPrice': '95.00', 'highPrice': '105.00', 'lowPrice': '90.00', 'volume': '1500.00', 'quoteVolume': '150000.00', 'count': '12000', 'priceChangePercent': '5.26'},
-        {'symbol': 'AVAXUSDT', 'lastPrice': '40.00', 'openPrice': '38.00', 'highPrice': '42.00', 'lowPrice': '36.00', 'volume': '2500.00', 'quoteVolume': '100000.00', 'count': '18000', 'priceChangePercent': '5.26'}
+        {'symbol': 'AVAXUSDT', 'lastPrice': '40.00', 'openPrice': '38.00', 'highPrice': '42.00', 'lowPrice': '36.00', 'volume': '2500.00', 'quoteVolume': '100000.00', 'count': '18000', 'priceChangePercent': '5.26'},
+        {'symbol': 'DOGEUSDT', 'lastPrice': '0.15', 'openPrice': '0.14', 'highPrice': '0.16', 'lowPrice': '0.13', 'volume': '100000.00', 'quoteVolume': '15000.00', 'count': '60000', 'priceChangePercent': '7.14'},
+        {'symbol': 'DOTUSDT', 'lastPrice': '8.00', 'openPrice': '7.80', 'highPrice': '8.20', 'lowPrice': '7.60', 'volume': '3000.00', 'quoteVolume': '24000.00', 'count': '8000', 'priceChangePercent': '2.56'}
     ]
-    return mock_data
+    
+    # Generate additional mock coins to reach the desired limit
+    additional_coins = []
+    for i in range(10, limit):
+        price = round(random.uniform(0.01, 100), 6)
+        change = round(random.uniform(-10, 10), 2)
+        additional_coins.append({
+            'symbol': f'COIN{i}USDT',
+            'lastPrice': str(price),
+            'openPrice': str(price * (1 - change/100)),
+            'highPrice': str(price * (1 + abs(change)/100)),
+            'lowPrice': str(price * (1 - abs(change)/100)),
+            'volume': str(random.uniform(100, 10000)),
+            'quoteVolume': str(price * random.uniform(100, 10000)),
+            'count': str(random.randint(100, 10000)),
+            'priceChangePercent': str(change)
+        })
+    
+    all_coins = base_coins + additional_coins
+    return all_coins[:limit]
 
 def fetch_binance_klines(symbol: str, interval: str = '1d', limit: int = 90) -> pd.DataFrame:
     """Fetch OHLCV klines from Binance and return a normalized DataFrame."""
