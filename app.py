@@ -356,7 +356,7 @@ def build_charts(df: pd.DataFrame, technical: dict, lstm_prediction: dict) -> di
 @app.route('/')
 def index():
     try:
-        return send_from_directory('static', 'index.html')
+        return send_from_directory('public', 'index.html')
     except Exception as e:
         logger.error(f"Error serving index: {e}")
         return jsonify({'error': 'Page not found'}), 404
@@ -364,7 +364,7 @@ def index():
 @app.route('/static/<path:filename>')
 def static_files(filename):
     try:
-        return send_from_directory('static', filename)
+        return send_from_directory('public', filename)
     except Exception as e:
         logger.error(f"Error serving static file {filename}: {e}")
         return jsonify({'error': 'File not found'}), 404
