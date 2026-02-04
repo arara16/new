@@ -426,7 +426,7 @@ def get_symbols():
         
         # Process and return top symbols (USDT only), sorted by quote volume
         usdt_tickers = [t for t in tickers if str(t.get('symbol', '')).endswith('USDT')]
-        top_tickers = sorted(usdt_tickers, key=lambda x: float(x.get('quoteVolume', 0)), reverse=True)[:15]
+        top_tickers = sorted(usdt_tickers, key=lambda x: float(x.get('quoteVolume', 0)), reverse=True)[:100]
         
         symbols = []
         for ticker in top_tickers:
